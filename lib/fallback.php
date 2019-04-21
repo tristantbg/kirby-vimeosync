@@ -1,6 +1,6 @@
 <?php
 
-file::$methods['cloudinary_url'] = function($file, $options = array('')) {
+file::$methods['vimeo_tag'] = function($file, $options = array('')) {
   $file_url = '';
 
   switch ($file->type()) {

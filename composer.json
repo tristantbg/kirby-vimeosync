@@ -1,5 +1,5 @@
 {
     "require": {
-        "cloudinary/cloudinary_php": "^1.10"
+        "vimeo/vimeo-api": "^3.0"
     }
 }

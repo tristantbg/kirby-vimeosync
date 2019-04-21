@@ -1,12 +1,13 @@
 <?php
 
-if (c::get('kirby.cloudinary')) {
+if (c::get('kirby.vimeosync')) {
 
-  \Cloudinary::config(array(
-    'cloud_name' => c::get('kirby.cloudinary.cloud_name'),
-    'api_key' => c::get('kirby.cloudinary.api_key'),
-    'api_secret' => c::get('kirby.cloudinary.api_secret')
-  ));
+  if (c::get('kirby.vimeosync.access_token')) {
+      throw new Exception(
+          'You can not upload a file without an access token. You can find this token on your app page, or generate ' .
+          'one using `auth.php`.'
+      );
+  }
 
   require_once __DIR__ . DS . 'methods.php';
 

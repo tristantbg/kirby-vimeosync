@@ -10,41 +10,47 @@ file::$methods['vimeo_tag'] = function($file, $options = array('')) {
   $poster = !empty($options['poster']) ? $options['poster'] : '';
   $video = null;
 
+  $videoContainerClass = 'player-container';
+  $videoClass = 'video-player';
+  if(!empty($options['class'])) $videoClass .= ' '.$options['class'];
+  if(!empty($options['controls']) && $options['controls']) $videoClass .= ' controls';
+
+  $videoContainer = brick('div')->attr('class', $videoContainerClass);
+  $video = brick('video')
+        ->attr('class', $videoClass)
+        ->attr('poster', $poster)
+        ->attr('width', '100%')
+        ->attr('height', 'auto')
+        ->attr('preload', 'auto');
+
+  if(!empty($options['controls']) && $options['controls']) $video->attr('controls', true);
+  if(!empty($options['loop']) && $options['loop']) $video->attr('loop', 'loop');
+  if(!empty($options['muted']) && $options['muted']) $video->attr('muted', 'muted');
+  if(!empty($options['playsinline']) && $options['playsinline']) $video->attr('playsinline', 'true');
+
   if ($file->vimeoFiles()->isNotEmpty()) {
-    $videoContainerClass = 'player-container';
-    $videoClass = 'video-player';
-    if(!empty($options['class'])) $videoClass .= ' '.$options['class'];
-    if(!empty($options['controls']) && $options['controls']) $videoClass .= ' controls';
-
-    $videoContainer = brick('div')->attr('class', $videoContainerClass);
-    $video = brick('video')
-          ->attr('class', $videoClass)
-          ->attr('poster', $poster)
-          ->attr('width', '100%')
-          ->attr('height', 'auto')
-          ->attr('preload', 'auto');
-
-    if(!empty($options['controls']) && $options['controls']) $video->attr('controls', true);
-    if(!empty($options['loop']) && $options['loop']) $video->attr('loop', 'loop');
-    if(!empty($options['muted']) && $options['muted']) $video->attr('muted', 'muted');
-    if(!empty($options['playsinline']) && $options['playsinline']) $video->attr('playsinline', 'true');
-    if($hls = $file->vimeoHls()->first()) $video->attr('data-stream', $hls);
-    if($file->vimeofiles()->isNotEmpty() && $file->vimeoHD()->last()) {
+    if($hls = $file->vimeoHls()->first()) $video->attr('data-stream', $hls->link());
+    if($file->vimeoHD()->last()) {
       $hd = $file->vimeoHD()->last()->link();
       $video->attr('data-hd', $hd);
       $video->append('<source src=' . $hd . ' type="video/mp4">');
     }
-    if($file->vimeofiles()->isNotEmpty() && $file->vimeoSD()->last()) {
+    if($file->vimeoSD()->last()) {
       $sd = $file->vimeoSD()->last()->link();
       $video->attr('data-sd', $file->vimeoSD()->last()->link());
       if(!isset($hd)) $video->append('<source src=' . $sd . ' type="video/mp4">');
     }
-
-    $videoContainer->append($video);
-
-    return $videoContainer;
-
   }
+  else {
+    $hd = $file->url();
+    $video->attr('data-hd', $hd);
+    $video->append('<source src=' . $hd . ' type="video/mp4">');
+  }
+
+  $videoContainer->append($video);
+
+  return $videoContainer;
+
 
 };
 

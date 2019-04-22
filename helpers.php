@@ -87,14 +87,13 @@ function k_vimeo_write_infos($file, $uri)
     $body            = $response['body'];
     $vimeoThumbnails = isset($body['pictures']) ? $body['pictures']['sizes'] : [];
     $vimeoFiles      = isset($body['files']) ? $body['files'] : [];
-    dump($body); die;
 
     usort($vimeoThumbnails, function ($item1, $item2) {
         return $item1['width'] <=> $item2['width'];
     });
 
     usort($vimeoFiles, function ($item1, $item2) {
-        return $item1['width'] <=> $item2['width'];
+        if($item1['quality'] !== 'hls' && $item2['quality'] !== 'hls') return $item1['width'] <=> $item2['width'];
     });
 
     if (isset($body['error'])) {

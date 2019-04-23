@@ -16,8 +16,8 @@ function k_vimeo_status($file)
     if ($file->type() == 'video' && $file->vimeoURI()->isNotEmpty()) {
         $lib = k_vimeo_lib();
         // Make an API call to see if the video is finished transcoding.
-        $status = $lib->request($uri . '?fields=transcode.status');
-        return $status['body']['transcode']['status'] === 'complete';
+        $status = $lib->request($file->vimeoURI(), ['fields' => 'transcode.status']);
+        return $status['body']['transcode']['status'] == 'complete';
     }
 }
 
@@ -31,15 +31,19 @@ function k_vimeo_upload($file)
             // Upload the file and include the video title and description.
             $uri = $lib->upload($file->root(), array(
                 'name'        => $file->page()->title() . ' (' . $file->filename() . ')',
-                'description' => $file->page()->text(),
+                'privacy' => [
+                  'download' => false,
+                  'embed' => 'private',
+                  'view' => 'nobody',
+                ]
             ));
+
+            k_vimeo_write_infos($file, $uri);
 
             if (c::get('kirby.vimeosync.project_id')) {
                 // Make an API call to edit the folder of the video.
-                $lib->request('me/projects/' . c::get('kirby.vimeosync.project_id') . $uri, null, 'PUT');
+                $response = $lib->request('/me/projects/' . c::get('kirby.vimeosync.project_id') . $uri, [], 'PUT');
             }
-
-            k_vimeo_write_infos($file, $uri);
 
         } catch (VimeoUploadException $e) {
             // We may have had an error. We can't resolve it here necessarily, so report it to the user.
@@ -77,8 +81,8 @@ function k_vimeo_replace($oldFile, $file)
 
 function k_vimeo_write_infos($file, $uri)
 {
-
-    $response        = $lib->request($uri . '?fields=name,description,link,pictures,files', ['per_page' => 1], 'GET');
+    $lib = k_vimeo_lib();
+    $response        = $lib->request($uri, ['fields' => 'name,description,link,pictures,files', 'per_page' => 1], 'GET');
     $body            = $response['body'];
     $vimeoThumbnails = isset($body['pictures']) ? $body['pictures']['sizes'] : [];
     $vimeoFiles      = isset($body['files']) ? $body['files'] : [];
@@ -88,7 +92,7 @@ function k_vimeo_write_infos($file, $uri)
     });
 
     usort($vimeoFiles, function ($item1, $item2) {
-        return $item1['width'] <=> $item2['width'];
+        if($item1['quality'] !== 'hls' && $item2['quality'] !== 'hls') return $item1['width'] <=> $item2['width'];
     });
 
     if (isset($body['error'])) {

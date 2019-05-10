@@ -1,6 +1,6 @@
 <?php
 
-if (c::get('kirby.vimeosync')) {
+if (c::get('kirby.vimeouploader')) {
 
     if (!c::get('kirby.vimeosync.access_token')) {
         throw new Exception(

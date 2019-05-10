@@ -2,9 +2,9 @@
 
 function k_vimeo_lib()
 {
-    $client_id     = c::get('kirby.vimeosync.client_id');
-    $client_secret = c::get('kirby.vimeosync.client_secret');
-    $access_token  = c::get('kirby.vimeosync.access_token');
+    $client_id     = c::get('kirby.vimeouploader.client_id');
+    $client_secret = c::get('kirby.vimeouploader.client_secret');
+    $access_token  = c::get('kirby.vimeouploader.access_token');
     // Instantiate the library with your client id, secret and access token (pulled from dev site)
     $lib = new \Vimeo\Vimeo($client_id, $client_secret, $access_token);
 
@@ -40,9 +40,9 @@ function k_vimeo_upload($file)
 
             k_vimeo_write_infos($file, $uri);
 
-            if (c::get('kirby.vimeosync.project_id')) {
+            if (c::get('kirby.vimeouploader.project_id')) {
                 // Make an API call to edit the folder of the video.
-                $response = $lib->request('/me/projects/' . c::get('kirby.vimeosync.project_id') . $uri, [], 'PUT');
+                $response = $lib->request('/me/projects/' . c::get('kirby.vimeouploader.project_id') . $uri, [], 'PUT');
             }
 
         } catch (VimeoUploadException $e) {
